@@ -24,7 +24,7 @@ class Stock:
     def listar_ingredientes(self):
         return self.ingredientes
 ctk.set_appearance_mode("dark")
-ctk.set_default_color_theme("green")
+ctk.set_default_color_theme("blue")
 ventana = ctk.CTk()
 ventana.title("Gestión de Ingredientes y Pedidos")
 ventana.geometry("900x700")
