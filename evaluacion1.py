@@ -42,6 +42,9 @@ class Pedido:
 
     def calcular_total(self):
         return sum(menu['precio'] for menu in self.menus)
+    
+    def eliminar_todos_los_menus(self):
+        self.menus.clear()  # Vaciar la lista de menús
 
 def seleccionar_imagen(ruta):
     imagen = Image.open(ruta)
@@ -173,7 +176,6 @@ for i, imagen in enumerate(imagenes):
         command=lambda img=imagen, nom=nombre_menu, pre=precio_menu: agregar_menu_seleccionado(img, nom, pre))
     boton_menu.grid(row=i//2, column=i%2, padx=10, pady=10)
 
-
 treeview_precios = ttk.Treeview(frame_precios, columns=("menu", "cantidad", "precio"), show="headings", height=8)
 treeview_precios.column("menu", anchor=tk.W, width=200)
 treeview_precios.column("cantidad", anchor=tk.W, width=100)
@@ -189,28 +191,29 @@ def agregar_menu_seleccionado(imagen, nombre, precio):
     actualizar_precios()
 
 def actualizar_precios():
-    for item in treeview_precios.get_children():
-        treeview_precios.delete(item)
+    treeview_precios.delete(*treeview_precios.get_children())  # Eliminar todas las filas del Treeview
     for menu in pedido.listar_menus():
         treeview_precios.insert("", "end", values=(menu['nombre'], 1, f"${menu['precio']:.2f}"))
     actualizar_total()
-
-
-frame_total = ctk.CTkFrame(tab_pedido)
-frame_total.place(relx=0.55, rely=0.35, relwidth=0.4, relheight=0.1)
-
-label_total = ctk.CTkLabel(frame_total, text="Total: $0.00", font=("Arial", 16))
-label_total.pack(side="left", padx=20, pady=10)
-
-boton_eliminar = ctk.CTkButton(frame_total, text="Eliminar Menú", fg_color="black", text_color="white", command=lambda: print("Eliminar menú"))
-boton_eliminar.pack(side="right", padx=20, pady=10)
 
 def actualizar_total():
     total = pedido.calcular_total()
     label_total.configure(text=f"Total: ${total:.2f}")
 
+# Función para eliminar todos los menús y reiniciar la interfaz
+def eliminar_todos_los_menus_y_reiniciar():
+    pedido.eliminar_todos_los_menus()  # Eliminar todos los menús
+    actualizar_precios()  # Actualizar la tabla de precios
+    actualizar_total()  # Reiniciar el total a $0.00
 
-boton_generar_boleta = ctk.CTkButton(tab_pedido, text="Generar Boleta", font=("Arial", 14))
-boton_generar_boleta.place(relx=0.4, rely=0.88, relwidth=0.2, relheight=0.07)
+# Botón para eliminar todos los menús
+frame_total = ctk.CTkFrame(tab_pedido)
+frame_total.place(relx=0.55, rely=0.35, relwidth=0.4, relheight=0.1)
+
+label_total = ctk.CTkLabel(frame_total, text="Total: $0.00", font=("Arial", 16))
+label_total.pack(side="left", padx=20)
+
+boton_eliminar = ctk.CTkButton(frame_total, text="Eliminar Menú", fg_color="black", text_color="white", command=eliminar_todos_los_menus_y_reiniciar)
+boton_eliminar.pack(side="right", padx=20, pady=10)
 
 ventana.mainloop()
