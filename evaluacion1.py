@@ -2,49 +2,86 @@ import customtkinter as ctk
 import tkinter as tk
 from tkinter import ttk
 from CTkMessagebox import CTkMessagebox
+from PIL import Image, ImageTk
+
 class Ingrediente:
     def __init__(self, nombre, cantidad):
         self.nombre = nombre
         self.cantidad = cantidad
+
 class Stock:
     def __init__(self):
         self.ingredientes = []
+
     def agregar_ingrediente(self, ingrediente):
         for ingr in self.ingredientes:
             if ingr.nombre == ingrediente.nombre:
                 ingr.cantidad += ingrediente.cantidad
                 return
         self.ingredientes.append(ingrediente)
+
     def eliminar_ingrediente(self, nombre_ingrediente):
         for ingrediente in self.ingredientes:
             if ingrediente.nombre == nombre_ingrediente:
                 self.ingredientes.remove(ingrediente)
                 return True
         return False
+
     def listar_ingredientes(self):
         return self.ingredientes
+
+class Pedido:
+    def __init__(self):
+        self.menus = []
+
+    def agregar_menu(self, menu):
+        self.menus.append(menu)
+
+    def listar_menus(self):
+        return self.menus
+
+    def calcular_total(self):
+        return sum(menu['precio'] for menu in self.menus)
+
+def seleccionar_imagen(ruta):
+    imagen = Image.open(ruta)
+    imagen = imagen.resize((100, 100), Image.Resampling.LANCZOS)
+    return ImageTk.PhotoImage(imagen)
+
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
+
 ventana = ctk.CTk()
 ventana.title("Gestión de Ingredientes y Pedidos")
-ventana.geometry("900x700")
+ventana.geometry("1200x800")
+
 tabview = ctk.CTkTabview(ventana)
 tabview.pack(fill="both", expand=True)
+
+# Pestaña de Ingredientes
 tab_ingredientes = tabview.add("Ingreso de Ingredientes")
 tab_pedido = tabview.add("Pedido")
+
 frame_formulario = ctk.CTkFrame(tab_ingredientes)
 frame_formulario.pack(side="left", fill="both", expand=True, padx=10, pady=10)
+
 frame_treeview = ctk.CTkFrame(tab_ingredientes)
 frame_treeview.pack(side="right", fill="both", expand=True, padx=10, pady=10)
+
 label_nombre = ctk.CTkLabel(frame_formulario, text="Nombre del Ingrediente:")
 label_nombre.pack(pady=5)
+
 entrada_nombre = ctk.CTkEntry(frame_formulario)
 entrada_nombre.pack(pady=5)
+
 label_cantidad = ctk.CTkLabel(frame_formulario, text="Cantidad:")
 label_cantidad.pack(pady=5)
+
 entrada_cantidad = ctk.CTkEntry(frame_formulario)
 entrada_cantidad.pack(pady=5)
+
 stock = Stock()
+
 def agregar_ingrediente():
     nombre = entrada_nombre.get().strip()
     cantidad = entrada_cantidad.get().strip()
@@ -61,6 +98,7 @@ def agregar_ingrediente():
     stock.agregar_ingrediente(nuevo_ingrediente)
     actualizar_treeview()
     limpiar_entradas()
+
 def eliminar_ingrediente():
     seleccion = treeview.selection()
     if not seleccion:
@@ -73,30 +111,82 @@ def eliminar_ingrediente():
     else:
         CTkMessagebox(title="Error", message="El ingrediente no se encontró en el stock.", icon="warning")
     limpiar_entradas()
+
 def actualizar_treeview():
     for item in treeview.get_children():
         treeview.delete(item)
     for ingrediente in stock.listar_ingredientes():
         treeview.insert("", "end", values=(ingrediente.nombre, ingrediente.cantidad))
+
 def limpiar_entradas():
     entrada_nombre.delete(0, tk.END)
     entrada_cantidad.delete(0, tk.END)
+
 def validar_nombre(nombre):
     return nombre.replace(" ", "").isalpha()
+
 def validar_cantidad(cantidad):
     return cantidad.isdigit() and int(cantidad) > 0
+
 treeview = ttk.Treeview(frame_treeview, columns=("nombre", "cantidad"), show="headings", height=20)
 treeview.column("nombre", anchor=tk.W, width=250)
 treeview.column("cantidad", anchor=tk.W, width=150)
 treeview.heading("nombre", text="Nombre del Ingrediente")
 treeview.heading("cantidad", text="Cantidad")
 treeview.pack(expand=True, fill="both", padx=10, pady=10)
+
 boton_agregar = ctk.CTkButton(frame_formulario, text="Ingresar Ingrediente", command=agregar_ingrediente)
 boton_agregar.pack(pady=10)
+
 boton_eliminar = ctk.CTkButton(frame_treeview, text="Eliminar Ingrediente", fg_color="black", text_color="white", command=eliminar_ingrediente)
 boton_eliminar.pack(pady=10)
+
 boton_generar_menu = ctk.CTkButton(tab_ingredientes, text="Generar Menú")
 boton_generar_menu.pack(side="bottom", pady=20)
-# Código de la pestaña "Pedido" (por implementar)
-# Aquí es donde implementarías la funcionalidad de los menús, la gestión del pedido, y la generación de la boleta.
+
+# Pestaña de Pedido
+frame_opciones = ctk.CTkFrame(tab_pedido)
+frame_opciones.pack(side="top", fill="x", padx=10, pady=10)
+
+frame_precios = ctk.CTkFrame(tab_pedido)
+frame_precios.pack(side="bottom", fill="both", padx=10, pady=10)
+
+pedido = Pedido()
+
+# Seleccionar imágenes
+imagenes = [
+    seleccionar_imagen("icono_cola_64x64.png"),
+    seleccionar_imagen("icono_hamburguesa_negra_64x64.png"),
+    seleccionar_imagen("icono_papas_fritas_64x64.png"),
+    seleccionar_imagen("icono_hotdog_sin_texto_64x64.png")
+]
+
+menus_creados = []
+
+def agregar_menu_seleccionado(imagen, nombre, precio):
+    nuevo_menu = {'imagen': imagen, 'nombre': nombre, 'precio': precio}
+    pedido.agregar_menu(nuevo_menu)
+    actualizar_precios()
+
+def actualizar_precios():
+    for item in treeview_precios.get_children():
+        treeview_precios.delete(item)
+    for menu in pedido.listar_menus():
+        treeview_precios.insert("", "end", values=(menu['nombre'], f"${menu['precio']:.2f}"))
+
+# Treeview para mostrar los precios en la parte inferior
+treeview_precios = ttk.Treeview(frame_precios, columns=("menu", "precio"), show="headings", height=8)
+treeview_precios.column("menu", anchor=tk.W, width=200)
+treeview_precios.column("precio", anchor=tk.W, width=100)
+treeview_precios.heading("menu", text="Menú")
+treeview_precios.heading("precio", text="Precio")
+treeview_precios.pack(expand=True, fill="both", padx=10, pady=10)
+
+for i, imagen in enumerate(imagenes):
+    nombre_menu = f"Menu {i+1}"
+    precio_menu = (i+1) * 10  # Precio de ejemplo
+
+    boton_menu = ctk.CTkButton(frame_opciones, text=f"Seleccionar {nombre_menu}", image=imagen, compound="left", command=lambda img=imagen, nom=nombre_menu, pre=precio_menu: agregar_menu_seleccionado(img, nom, pre))
+    boton_menu.pack(side="left", padx=5, pady=5)
+
 ventana.mainloop()
