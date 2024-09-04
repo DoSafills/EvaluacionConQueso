@@ -131,6 +131,9 @@ def validar_nombre(nombre):
 def validar_cantidad(cantidad):
     return cantidad.isdigit() and int(cantidad) > 0
 
+boton_eliminar = ctk.CTkButton(frame_treeview, text="Eliminar Ingrediente", fg_color="black", text_color="white", command=eliminar_ingrediente)
+boton_eliminar.pack(pady=10)
+
 treeview = ttk.Treeview(frame_treeview, columns=("nombre", "cantidad"), show="headings", height=20)
 treeview.column("nombre", anchor=tk.W, width=250)
 treeview.column("cantidad", anchor=tk.W, width=150)
@@ -140,9 +143,6 @@ treeview.pack(expand=True, fill="both", padx=10, pady=10)
 
 boton_agregar = ctk.CTkButton(frame_formulario, text="Ingresar Ingrediente", command=agregar_ingrediente)
 boton_agregar.pack(pady=10)
-
-boton_eliminar = ctk.CTkButton(frame_treeview, text="Eliminar Ingrediente", fg_color="black", text_color="white", command=eliminar_ingrediente)
-boton_eliminar.pack(pady=10)
 
 boton_generar_menu = ctk.CTkButton(tab_ingredientes, text="Generar Menú")
 boton_generar_menu.pack(side="bottom", pady=20)
