@@ -30,6 +30,9 @@ class Stock:
     def listar_ingredientes(self):
         return self.ingredientes
 
+    def hay_ingredientes(self):
+        return len(self.ingredientes) > 0
+
 class Pedido:
     def __init__(self):
         self.menus = []
@@ -40,11 +43,11 @@ class Pedido:
     def listar_menus(self):
         return self.menus
 
+    def eliminar_todos_los_menus(self):
+        self.menus = []
+
     def calcular_total(self):
         return sum(menu['precio'] for menu in self.menus)
-    
-    def eliminar_todos_los_menus(self):
-        self.menus.clear()  # Vaciar la lista de menús
 
 def seleccionar_imagen(ruta):
     imagen = Image.open(ruta)
@@ -131,9 +134,6 @@ def validar_nombre(nombre):
 def validar_cantidad(cantidad):
     return cantidad.isdigit() and int(cantidad) > 0
 
-boton_eliminar = ctk.CTkButton(frame_treeview, text="Eliminar Ingrediente", fg_color="black", text_color="white", command=eliminar_ingrediente)
-boton_eliminar.pack(pady=10)
-
 treeview = ttk.Treeview(frame_treeview, columns=("nombre", "cantidad"), show="headings", height=20)
 treeview.column("nombre", anchor=tk.W, width=250)
 treeview.column("cantidad", anchor=tk.W, width=150)
@@ -143,6 +143,9 @@ treeview.pack(expand=True, fill="both", padx=10, pady=10)
 
 boton_agregar = ctk.CTkButton(frame_formulario, text="Ingresar Ingrediente", command=agregar_ingrediente)
 boton_agregar.pack(pady=10)
+
+boton_eliminar = ctk.CTkButton(frame_treeview, text="Eliminar Ingrediente", fg_color="black", text_color="white", command=eliminar_ingrediente)
+boton_eliminar.pack(pady=10)
 
 boton_generar_menu = ctk.CTkButton(tab_ingredientes, text="Generar Menú")
 boton_generar_menu.pack(side="bottom", pady=20)
@@ -163,6 +166,14 @@ imagenes = [
     seleccionar_imagen("icono_papas_fritas_64x64.png"),
     seleccionar_imagen("icono_hotdog_sin_texto_64x64.png")
 ]
+
+def agregar_menu_seleccionado(imagen, nombre, precio):
+    if not stock.hay_ingredientes():
+        CTkMessagebox(title="Error", message="No hay ingredientes en stock. No se puede hacer el pedido.", icon="warning")
+        return
+    nuevo_menu = {'imagen': imagen, 'nombre': nombre, 'precio': precio}
+    pedido.agregar_menu(nuevo_menu)
+    actualizar_precios()
 
 for i, imagen in enumerate(imagenes):
     nombre_menu = ["Pepsi", "Hamburguesa", "Papas Fritas", "Completo"][i]
@@ -185,13 +196,9 @@ treeview_precios.heading("cantidad", text="Cantidad")
 treeview_precios.heading("precio", text="Precio Unitario")
 treeview_precios.pack(expand=True, fill="both", padx=10, pady=10)
 
-def agregar_menu_seleccionado(imagen, nombre, precio):
-    nuevo_menu = {'imagen': imagen, 'nombre': nombre, 'precio': precio}
-    pedido.agregar_menu(nuevo_menu)
-    actualizar_precios()
-
 def actualizar_precios():
-    treeview_precios.delete(*treeview_precios.get_children())  # Eliminar todas las filas del Treeview
+    for item in treeview_precios.get_children():
+        treeview_precios.delete(item)
     for menu in pedido.listar_menus():
         treeview_precios.insert("", "end", values=(menu['nombre'], 1, f"${menu['precio']:.2f}"))
     actualizar_total()
