@@ -161,7 +161,27 @@ imagenes = [
     seleccionar_imagen("icono_hotdog_sin_texto_64x64.png")
 ]
 
-menus_creados = []
+for i, imagen in enumerate(imagenes):
+    nombre_menu = ["Pepsi", "Hamburguesa", "Papas Fritas", "Completo"][i]
+    precio_menu = (i+1) * 10
+    boton_menu = ctk.CTkButton(
+        frame_opciones, 
+        text=nombre_menu, 
+        image=imagen, 
+        compound="top", 
+        font=("Arial", 14), 
+        command=lambda img=imagen, nom=nombre_menu, pre=precio_menu: agregar_menu_seleccionado(img, nom, pre))
+    boton_menu.grid(row=i//2, column=i%2, padx=10, pady=10)
+
+
+treeview_precios = ttk.Treeview(frame_precios, columns=("menu", "cantidad", "precio"), show="headings", height=8)
+treeview_precios.column("menu", anchor=tk.W, width=200)
+treeview_precios.column("cantidad", anchor=tk.W, width=100)
+treeview_precios.column("precio", anchor=tk.W, width=100)
+treeview_precios.heading("menu", text="Nombre del Menú")
+treeview_precios.heading("cantidad", text="Cantidad")
+treeview_precios.heading("precio", text="Precio Unitario")
+treeview_precios.pack(expand=True, fill="both", padx=10, pady=10)
 
 def agregar_menu_seleccionado(imagen, nombre, precio):
     nuevo_menu = {'imagen': imagen, 'nombre': nombre, 'precio': precio}
@@ -172,21 +192,25 @@ def actualizar_precios():
     for item in treeview_precios.get_children():
         treeview_precios.delete(item)
     for menu in pedido.listar_menus():
-        treeview_precios.insert("", "end", values=(menu['nombre'], f"${menu['precio']:.2f}"))
+        treeview_precios.insert("", "end", values=(menu['nombre'], 1, f"${menu['precio']:.2f}"))
+    actualizar_total()
 
-# Treeview para mostrar los precios en la parte inferior
-treeview_precios = ttk.Treeview(frame_precios, columns=("menu", "precio"), show="headings", height=8)
-treeview_precios.column("menu", anchor=tk.W, width=200)
-treeview_precios.column("precio", anchor=tk.W, width=100)
-treeview_precios.heading("menu", text="Menú")
-treeview_precios.heading("precio", text="Precio")
-treeview_precios.pack(expand=True, fill="both", padx=10, pady=10)
 
-for i, imagen in enumerate(imagenes):
-    nombre_menu = f"Menu {i+1}"
-    precio_menu = (i+1) * 10  # Precio de ejemplo
+frame_total = ctk.CTkFrame(tab_pedido)
+frame_total.place(relx=0.55, rely=0.35, relwidth=0.4, relheight=0.1)
 
-    boton_menu = ctk.CTkButton(frame_opciones, text=f"Seleccionar {nombre_menu}", image=imagen, compound="left", command=lambda img=imagen, nom=nombre_menu, pre=precio_menu: agregar_menu_seleccionado(img, nom, pre))
-    boton_menu.pack(side="left", padx=5, pady=5)
+label_total = ctk.CTkLabel(frame_total, text="Total: $0.00", font=("Arial", 16))
+label_total.pack(side="left", padx=20, pady=10)
+
+boton_eliminar = ctk.CTkButton(frame_total, text="Eliminar Menú", fg_color="black", text_color="white", command=lambda: print("Eliminar menú"))
+boton_eliminar.pack(side="right", padx=20, pady=10)
+
+def actualizar_total():
+    total = pedido.calcular_total()
+    label_total.configure(text=f"Total: ${total:.2f}")
+
+
+boton_generar_boleta = ctk.CTkButton(tab_pedido, text="Generar Boleta", font=("Arial", 14))
+boton_generar_boleta.place(relx=0.4, rely=0.88, relwidth=0.2, relheight=0.07)
 
 ventana.mainloop()
