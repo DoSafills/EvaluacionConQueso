@@ -177,7 +177,7 @@ def agregar_menu_seleccionado(imagen, nombre, precio):
 
 for i, imagen in enumerate(imagenes):
     nombre_menu = ["Pepsi", "Hamburguesa", "Papas Fritas", "Completo"][i]
-    precio_menu = (i+1) * 10
+    precio_menu = (i+1) * 1
     boton_menu = ctk.CTkButton(
         frame_opciones, 
         text=nombre_menu, 
@@ -200,24 +200,25 @@ def actualizar_precios():
     for item in treeview_precios.get_children():
         treeview_precios.delete(item)
     for menu in pedido.listar_menus():
-        treeview_precios.insert("", "end", values=(menu['nombre'], 1, f"${menu['precio']:.2f}"))
+        treeview_precios.insert("", "end", values=(menu['nombre'], 1 , f"${menu['precio']:.3f}"))
     actualizar_total()
 
 def actualizar_total():
     total = pedido.calcular_total()
-    label_total.configure(text=f"Total: ${total:.2f}")
+    label_total.configure(text=f"Total: ${total:.3f}")
 
-# Función para eliminar todos los menús y reiniciar la interfaz
+# Funcion para eliminar todos los menús y reiniciar la interfaz
 def eliminar_todos_los_menus_y_reiniciar():
-    pedido.eliminar_todos_los_menus()  # Eliminar todos los menús
+    pedido.eliminar_todos_los_menus()
+      # Eliminar todos los menús
     actualizar_precios()  # Actualizar la tabla de precios
-    actualizar_total()  # Reiniciar el total a $0.00
+    actualizar_total()  # Reiniciar el total a $0
 
-# Botón para eliminar todos los menús
+# Boton para eliminar todos los menús
 frame_total = ctk.CTkFrame(tab_pedido)
 frame_total.place(relx=0.55, rely=0.35, relwidth=0.4, relheight=0.1)
 
-label_total = ctk.CTkLabel(frame_total, text="Total: $0.00", font=("Arial", 16))
+label_total = ctk.CTkLabel(frame_total, text="Total: $0", font=("Arial", 16))
 label_total.pack(side="left", padx=20)
 
 boton_eliminar = ctk.CTkButton(frame_total, text="Eliminar Menú", fg_color="black", text_color="white", command=eliminar_todos_los_menus_y_reiniciar)
