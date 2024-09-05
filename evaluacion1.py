@@ -92,7 +92,7 @@ def agregar_ingrediente():
     nombre = entrada_nombre.get().strip()
     cantidad = entrada_cantidad.get().strip()
     if not nombre or not cantidad:
-        CTkMessagebox(title="Error", message="Todos los campos son obligatorios.", icon="warning")
+        CTkMessagebox(title="Error", message="El nombre debe contener solo letras y espacios.", icon="warning")
         return
     if not validar_nombre(nombre):
         CTkMessagebox(title="Error", message="El nombre del ingrediente debe contener solo letras y espacios.", icon="warning")
@@ -184,8 +184,12 @@ for i, imagen in enumerate(imagenes):
         image=imagen, 
         compound="top", 
         font=("Arial", 14), 
+        fg_color="transparent", 
+        border_width=2,  # Ancho del borde
+        border_color="green",  # Color del borde # Cambia 'gray' por el color que prefieras
         command=lambda img=imagen, nom=nombre_menu, pre=precio_menu: agregar_menu_seleccionado(img, nom, pre))
     boton_menu.grid(row=i//2, column=i%2, padx=10, pady=10)
+
 
 treeview_precios = ttk.Treeview(frame_precios, columns=("menu", "cantidad", "precio"), show="headings", height=8)
 treeview_precios.column("menu", anchor=tk.W, width=200)
