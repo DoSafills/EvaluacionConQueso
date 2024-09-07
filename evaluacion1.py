@@ -3,6 +3,7 @@ import tkinter as tk
 from tkinter import ttk
 from CTkMessagebox import CTkMessagebox
 from PIL import Image, ImageTk
+from fpdf import FPDF
 
 class Ingrediente:
     def __init__(self, nombre, cantidad):
@@ -53,6 +54,42 @@ def seleccionar_imagen(ruta):
     imagen = Image.open(ruta)
     imagen = imagen.resize((100, 100), Image.Resampling.LANCZOS)
     return ImageTk.PhotoImage(imagen)
+
+def generar_boleta():
+    if not pedido.listar_menus():
+        CTkMessagebox(title="Error", message="No hay menús en el pedido para generar una boleta.", icon="warning")
+        return
+
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+
+    # Título
+    pdf.cell(200, 10, txt="Boleta de Pedido", ln=True, align='C')
+    pdf.ln(10)
+
+    # Agregar detalles del pedido
+    total = pedido.calcular_total()
+    pdf.cell(100, 10, txt="Nombre del Menú", border=1, align='C')
+    pdf.cell(50, 10, txt="Cantidad", border=1, align='C')
+    pdf.cell(50, 10, txt="Precio Unitario", border=1, ln=True, align='C')
+
+    for menu in pedido.listar_menus():
+        pdf.cell(100, 10, txt=menu['nombre'], border=1)
+        pdf.cell(50, 10, txt="1", border=1, align='C')
+        pdf.cell(50, 10, txt=f"${menu['precio']:.2f}", border=1, ln=True, align='C')
+
+    # Total
+    pdf.ln(10)
+    pdf.cell(100, 10, txt="Total:", border=1)
+    pdf.cell(50, 10, txt="", border=1)
+    pdf.cell(50, 10, txt=f"${total:.2f}", border=1, ln=True, align='C')
+
+    # Guardar PDF
+    pdf_output = "boleta_pedido.pdf"
+    pdf.output(pdf_output)
+
+    CTkMessagebox(title="Éxito", message=f"Boleta generada exitosamente y guardada como {pdf_output}.", icon="check")
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
@@ -227,5 +264,10 @@ label_total.pack(side="left", padx=20)
 
 boton_eliminar = ctk.CTkButton(frame_total, text="Eliminar Menú", fg_color="black", text_color="white", command=eliminar_todos_los_menus_y_reiniciar)
 boton_eliminar.pack(side="right", padx=20, pady=10)
+
+# Agregar botón para generar boleta
+boton_generar_boleta = ctk.CTkButton(frame_total, text="Generar Boleta", fg_color="black", text_color="white", command=generar_boleta)
+boton_generar_boleta.pack(side="right", padx=20, pady=10)
+
 
 ventana.mainloop()
