@@ -47,8 +47,10 @@ class Pedido:
     def eliminar_todos_los_menus(self):
         self.menus = []
 
-    def calcular_total(self):
-        return sum(menu['precio'] for menu in self.menus)
+def calcular_total():
+    # Calcular el total considerando las cantidades de cada menú
+    total = sum(menu['precio'] * menu['cantidad'] for menu in self.menus)
+    return total
 
 def seleccionar_imagen(ruta):
     imagen = Image.open(ruta)
@@ -204,13 +206,31 @@ imagenes = [
     seleccionar_imagen("icono_hotdog_sin_texto_64x64.png")
 ]
 
+# Modificar la función para agregar el menú seleccionado
 def agregar_menu_seleccionado(imagen, nombre, precio):
     if not stock.hay_ingredientes():
         CTkMessagebox(title="Error", message="No hay ingredientes en stock. No se puede hacer el pedido.", icon="warning")
         return
-    nuevo_menu = {'imagen': imagen, 'nombre': nombre, 'precio': precio}
+    
+    # Verificar si hay suficientes ingredientes y descontarlos
+    disponible, faltantes = verificar_y_descontar_ingredientes(nombre)
+    if not disponible:
+        CTkMessagebox(title="Error", message=f"Faltan los siguientes ingredientes para {nombre}: {faltantes}", icon="warning")
+        return
+
+    # Verificar si el menú ya existe en el pedido
+    for menu in pedido.menus:
+        if menu['nombre'] == nombre:
+            menu['cantidad'] += 1  # Aumentar cantidad en lugar de crear un nuevo menú
+            actualizar_precios()   # Actualizar los precios en la vista
+            return
+
+    # Si no existe, agregar nuevo menú con cantidad inicial 1
+    nuevo_menu = {'imagen': imagen, 'nombre': nombre, 'precio': precio, 'cantidad': 1}  # Agregar cantidad = 1
     pedido.agregar_menu(nuevo_menu)
     actualizar_precios()
+
+
 
 # Ingredientes necesarios para cada menú
 ingredientes_necesarios = {
@@ -262,10 +282,18 @@ def agregar_menu_seleccionado(imagen, nombre, precio):
         CTkMessagebox(title="Error", message=f"Faltan los siguientes ingredientes para {nombre}: {faltantes}", icon="warning")
         return
 
-    # Si hay ingredientes, se agrega el menú
-    nuevo_menu = {'imagen': imagen, 'nombre': nombre, 'precio': precio}
+    # Verificar si el menú ya existe en el pedido y aumentar su cantidad
+    for menu in pedido.menus:
+        if menu['nombre'] == nombre:
+            menu['cantidad'] += 1  # Aumentar cantidad
+            actualizar_precios()   # Actualizar los precios en la vista
+            return
+
+    # Si no existe, agregar nuevo menú con cantidad inicial 1
+    nuevo_menu = {'imagen': imagen, 'nombre': nombre, 'precio': precio, 'cantidad': 1}  # Agregar cantidad = 1
     pedido.agregar_menu(nuevo_menu)
     actualizar_precios()
+
 
 # Actualiza el treeview para reflejar las cantidades actuales en el stock
 def actualizar_treeview():
@@ -302,16 +330,26 @@ treeview_precios.heading("cantidad", text="Cantidad")
 treeview_precios.heading("precio", text="Precio Unitario")
 treeview_precios.pack(expand=True, fill="both", padx=10, pady=10)
 
+# Actualiza la tabla de precios para reflejar las cantidades acumuladas
 def actualizar_precios():
+    # Limpiar el treeview antes de insertar nuevos valores
     for item in treeview_precios.get_children():
         treeview_precios.delete(item)
+    
+    # Insertar los menús con su nombre, cantidad y precio
     for menu in pedido.listar_menus():
-        treeview_precios.insert("", "end", values=(menu['nombre'], 1 , f"${menu['precio']:.3f}"))
+        treeview_precios.insert("", "end", values=(menu['nombre'], menu['cantidad'], f"${menu['precio']:.2f}"))
+    
+    # Actualizar el total
     actualizar_total()
 
+
+
+
+# Calcular el total multiplicando el precio por la cantidad
 def actualizar_total():
     total = pedido.calcular_total()
-    label_total.configure(text=f"Total: ${total:.3f}")
+    label_total.configure(text=f"Total: ${total:.2f}")
 
 # Funcion para eliminar todos los menús y reiniciar la interfaz
 def eliminar_todos_los_menus_y_reiniciar():
