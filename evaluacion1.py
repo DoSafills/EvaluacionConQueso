@@ -212,6 +212,71 @@ def agregar_menu_seleccionado(imagen, nombre, precio):
     pedido.agregar_menu(nuevo_menu)
     actualizar_precios()
 
+# Ingredientes necesarios para cada menú
+ingredientes_necesarios = {
+    "Hamburguesa": {"Tomate": 1, "Lechuga": 1, "Queso": 1},
+    "Papas Fritas": {"Papa": 1},
+    "Completo": {"Tomate": 1, "Palta": 1, "Pan": 1}
+}
+
+# Función para verificar si hay suficientes ingredientes
+# Modificar la función para verificar y descontar ingredientes
+def verificar_y_descontar_ingredientes(menu):
+    if menu not in ingredientes_necesarios:
+        return True, ""
+    
+    ingredientes_faltantes = []
+    
+    # Verificar si hay suficientes ingredientes
+    for ingrediente, cantidad_necesaria in ingredientes_necesarios[menu].items():
+        for stock_ingrediente in stock.ingredientes:
+            if stock_ingrediente.nombre == ingrediente:
+                if stock_ingrediente.cantidad >= cantidad_necesaria:
+                    break
+                else:
+                    ingredientes_faltantes.append(ingrediente)
+        else:
+            ingredientes_faltantes.append(ingrediente)
+
+    if ingredientes_faltantes:
+        return False, ", ".join(ingredientes_faltantes)
+    
+    # Si hay suficientes ingredientes, se descuentan del stock
+    for ingrediente, cantidad_necesaria in ingredientes_necesarios[menu].items():
+        for stock_ingrediente in stock.ingredientes:
+            if stock_ingrediente.nombre == ingrediente:
+                stock_ingrediente.cantidad -= cantidad_necesaria
+                break
+
+    return True, ""
+
+# Modificar la función para agregar el menú seleccionado
+def agregar_menu_seleccionado(imagen, nombre, precio):
+    if not stock.hay_ingredientes():
+        CTkMessagebox(title="Error", message="No hay ingredientes en stock. No se puede hacer el pedido.", icon="warning")
+        return
+    
+    # Verificar si hay suficientes ingredientes y descontarlos
+    disponible, faltantes = verificar_y_descontar_ingredientes(nombre)
+    if not disponible:
+        CTkMessagebox(title="Error", message=f"Faltan los siguientes ingredientes para {nombre}: {faltantes}", icon="warning")
+        return
+
+    # Si hay ingredientes, se agrega el menú
+    nuevo_menu = {'imagen': imagen, 'nombre': nombre, 'precio': precio}
+    pedido.agregar_menu(nuevo_menu)
+    actualizar_precios()
+
+# Actualiza el treeview para reflejar las cantidades actuales en el stock
+def actualizar_treeview():
+    for item in treeview.get_children():
+        treeview.delete(item)
+    for ingrediente in stock.listar_ingredientes():
+        treeview.insert("", "end", values=(ingrediente.nombre, ingrediente.cantidad))
+
+# Los botones y las imágenes de los menús ya están definidos
+
+
 for i, imagen in enumerate(imagenes):
     nombre_menu = ["Pepsi", "Hamburguesa", "Papas Fritas", "Completo"][i]
     precio_menu = (i+1) * 1
