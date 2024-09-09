@@ -216,9 +216,10 @@ imagenes = [
 
 # Ingredientes necesarios para cada menú
 ingredientes_necesarios = {
-    "Hamburguesa": {"Tomate": 1, "Lechuga": 1, "Queso": 1},
-    "Papas Fritas": {"Papa": 1},
-    "Completo": {"Tomate": 1, "Palta": 1, "Pan": 1}
+    "Hamburguesa": {"churrasco de carne": 1, "pan de hamburguesa": 1, "lamina de queso": 1},
+    "Papas Fritas": {"papa": 5},
+    "Completo": {"tomate": 1, "palta": 1, "pan de completo": 1, "Vienesa": 1,},
+    "Pepsi": {"bebida": 1} #Agregue los menu y cambie todo a minuscula como estaba en el word
 }
 
 
@@ -291,7 +292,7 @@ for i, imagen in enumerate(imagenes):
         image=imagen, 
         compound="top", 
         font=("Arial", 14), 
-        fg_color="green",  # Color de fondo inicial
+        fg_color="blue",  # Color de fondo inicial
         border_width=2,  # Ancho del borde
         command=lambda img=imagen, nom=nombre_menu, pre=precio_menu: agregar_menu_seleccionado(img, nom, pre))
     
