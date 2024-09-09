@@ -270,29 +270,6 @@ def verificar_y_descontar_ingredientes(menu):
 
     return True, ""
 
-# Modificar la función para agregar el menú seleccionado
-def agregar_menu_seleccionado(imagen, nombre, precio):
-    if not stock.hay_ingredientes():
-        CTkMessagebox(title="Error", message="No hay ingredientes en stock. No se puede hacer el pedido.", icon="warning")
-        return
-    
-    # Verificar si hay suficientes ingredientes y descontarlos
-    disponible, faltantes = verificar_y_descontar_ingredientes(nombre)
-    if not disponible:
-        CTkMessagebox(title="Error", message=f"Faltan los siguientes ingredientes para {nombre}: {faltantes}", icon="warning")
-        return
-
-    # Verificar si el menú ya existe en el pedido y aumentar su cantidad
-    for menu in pedido.menus:
-        if menu['nombre'] == nombre:
-            menu['cantidad'] += 1  # Aumentar cantidad
-            actualizar_precios()   # Actualizar los precios en la vista
-            return
-
-    # Si no existe, agregar nuevo menú con cantidad inicial 1
-    nuevo_menu = {'imagen': imagen, 'nombre': nombre, 'precio': precio, 'cantidad': 1}  # Agregar cantidad = 1
-    pedido.agregar_menu(nuevo_menu)
-    actualizar_precios()
 
 
 # Actualiza el treeview para reflejar las cantidades actuales en el stock
