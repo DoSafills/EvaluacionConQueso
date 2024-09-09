@@ -1,7 +1,4 @@
 # falta : arglar pdf ya que no c parecen al del video y el tema de los iconos ademas de lo del boton de generar menu
-
-
-
 import customtkinter as ctk
 import tkinter as tk
 from tkinter import ttk
@@ -84,13 +81,13 @@ def generar_boleta():
     for menu in pedido.listar_menus():
         pdf.cell(100, 10, txt=menu['nombre'], border=1)
         pdf.cell(50, 10, txt=str(menu['cantidad']), border=1, align='C')
-        pdf.cell(50, 10, txt=f"${menu['precio']:.2f}", border=1, ln=True, align='C')
+        pdf.cell(50, 10, txt=f"${menu['precio']:.0f}", border=1, ln=True, align='C')
 
     # Total
     pdf.ln(10)
     pdf.cell(100, 10, txt="Total:", border=1)
     pdf.cell(50, 10, txt="", border=1)
-    pdf.cell(50, 10, txt=f"${total:.2f}", border=1, ln=True, align='C')
+    pdf.cell(50, 10, txt=f"${total:.0f}", border=1, ln=True, align='C')
 
     # Guardar PDF
     pdf_output = "boleta_pedido.pdf"
@@ -211,15 +208,12 @@ imagenes = [
 ]
 
 
-
-
-
 # Ingredientes necesarios para cada menú
 ingredientes_necesarios = {
-    "Hamburguesa": {"Pan": 1, "Queso": 1, "Churrasco": 1},
-    "Papas Fritas": {"Papas": 5},
-    "Completo": {"Pan": 1, "Vienesa": 1, "Tomate": 1, "Palta": 1},
-    "Pepsi": {"Bebida": 1}
+    "Hamburguesa": {"pan": 1, "queso": 1, "churrasco": 1},
+    "Papas Fritas": {"papas": 5},
+    "Completo": {"pan": 1, "vienesa": 1, "tomate": 1, "palta": 1},
+    "Pepsi": {"bebida": 1}
 }
 
 def agregar_menu_seleccionado(imagen, nombre, precio):
@@ -330,7 +324,7 @@ def actualizar_precios():
     
     # Insertar los menús con su nombre, cantidad y precio
     for menu in pedido.listar_menus():
-        treeview_precios.insert("", "end", values=(menu['nombre'], menu['cantidad'], f"${menu['precio']:.2f}"))
+        treeview_precios.insert("", "end", values=(menu['nombre'], menu['cantidad'], f"${menu['precio']:.0f}"))
     
     # Actualizar el total
     actualizar_total()
@@ -341,7 +335,7 @@ def actualizar_precios():
 # Calcular el total multiplicando el precio por la cantidad
 def actualizar_total():
     total = pedido.calcular_total()
-    label_total.configure(text=f"Total: ${total:.2f}")
+    label_total.configure(text=f"Total: ${total:.0f}")
 
 # Funcion para eliminar todos los menús y reiniciar la interfaz
 def eliminar_todos_los_menus_y_reiniciar():
