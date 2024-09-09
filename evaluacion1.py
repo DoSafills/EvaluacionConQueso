@@ -1,3 +1,7 @@
+# falta : arglar pdf ya que no c parecen al del video y el tema de los iconos ademas de lo del boton de generar menu
+
+
+
 import customtkinter as ctk
 import tkinter as tk
 from tkinter import ttk
