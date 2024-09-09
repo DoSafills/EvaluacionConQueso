@@ -4,6 +4,8 @@ from tkinter import ttk
 from CTkMessagebox import CTkMessagebox
 from PIL import Image, ImageTk
 from fpdf import FPDF
+from customtkinter import CTkImage
+from PIL import Image
 
 class Ingrediente:
     def __init__(self, nombre, cantidad):
@@ -47,10 +49,9 @@ class Pedido:
     def eliminar_todos_los_menus(self):
         self.menus = []
 
-def calcular_total():
-    # Calcular el total considerando las cantidades de cada menú
-    total = sum(menu['precio'] * menu['cantidad'] for menu in self.menus)
-    return total
+    def calcular_total(self):
+        total = sum(menu['precio'] * menu['cantidad'] for menu in self.menus)
+        return total
 
 def seleccionar_imagen(ruta):
     imagen = Image.open(ruta)
@@ -78,7 +79,7 @@ def generar_boleta():
 
     for menu in pedido.listar_menus():
         pdf.cell(100, 10, txt=menu['nombre'], border=1)
-        pdf.cell(50, 10, txt="1", border=1, align='C')
+        pdf.cell(50, 10, txt=str(menu['cantidad']), border=1, align='C')
         pdf.cell(50, 10, txt=f"${menu['precio']:.2f}", border=1, ln=True, align='C')
 
     # Total
@@ -92,7 +93,6 @@ def generar_boleta():
     pdf.output(pdf_output)
 
     CTkMessagebox(title="Éxito", message=f"Boleta generada exitosamente y guardada como {pdf_output}.", icon="check")
-
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
@@ -206,29 +206,7 @@ imagenes = [
     seleccionar_imagen("icono_hotdog_sin_texto_64x64.png")
 ]
 
-# Modificar la función para agregar el menú seleccionado
-def agregar_menu_seleccionado(imagen, nombre, precio):
-    if not stock.hay_ingredientes():
-        CTkMessagebox(title="Error", message="No hay ingredientes en stock. No se puede hacer el pedido.", icon="warning")
-        return
-    
-    # Verificar si hay suficientes ingredientes y descontarlos
-    disponible, faltantes = verificar_y_descontar_ingredientes(nombre)
-    if not disponible:
-        CTkMessagebox(title="Error", message=f"Faltan los siguientes ingredientes para {nombre}: {faltantes}", icon="warning")
-        return
 
-    # Verificar si el menú ya existe en el pedido
-    for menu in pedido.menus:
-        if menu['nombre'] == nombre:
-            menu['cantidad'] += 1  # Aumentar cantidad en lugar de crear un nuevo menú
-            actualizar_precios()   # Actualizar los precios en la vista
-            return
-
-    # Si no existe, agregar nuevo menú con cantidad inicial 1
-    nuevo_menu = {'imagen': imagen, 'nombre': nombre, 'precio': precio, 'cantidad': 1}  # Agregar cantidad = 1
-    pedido.agregar_menu(nuevo_menu)
-    actualizar_precios()
 
 
 
@@ -238,6 +216,27 @@ ingredientes_necesarios = {
     "Papas Fritas": {"Papa": 1},
     "Completo": {"Tomate": 1, "Palta": 1, "Pan": 1}
 }
+
+
+def agregar_menu_seleccionado(imagen, nombre, precio):
+    if not stock.hay_ingredientes():
+        CTkMessagebox(title="Error", message="No hay ingredientes en stock. No se puede hacer el pedido.", icon="warning")
+        return
+
+    disponible, faltantes = verificar_y_descontar_ingredientes(nombre)
+    if not disponible:
+        CTkMessagebox(title="Error", message=f"Faltan los siguientes ingredientes para {nombre}: {faltantes}", icon="warning")
+        return
+
+    for menu in pedido.menus:
+        if menu['nombre'] == nombre:
+            menu['cantidad'] += 1
+            actualizar_precios()
+            return
+
+    nuevo_menu = {'imagen': imagen, 'nombre': nombre, 'precio': precio, 'cantidad': 1}
+    pedido.agregar_menu(nuevo_menu)
+    actualizar_precios()
 
 # Función para verificar si hay suficientes ingredientes
 # Modificar la función para verificar y descontar ingredientes
@@ -270,18 +269,15 @@ def verificar_y_descontar_ingredientes(menu):
 
     return True, ""
 
+def cambiar_color_fondo(event):
+    boton = event.widget
+    boton.configure(fg_color="blue")
 
-
-# Actualiza el treeview para reflejar las cantidades actuales en el stock
-def actualizar_treeview():
-    for item in treeview.get_children():
-        treeview.delete(item)
-    for ingrediente in stock.listar_ingredientes():
-        treeview.insert("", "end", values=(ingrediente.nombre, ingrediente.cantidad))
+def restaurar_color_fondo(event):
+    boton = event.widget
+    boton.configure(fg_color="green")
 
 # Los botones y las imágenes de los menús ya están definidos
-
-
 for i, imagen in enumerate(imagenes):
     nombre_menu = ["Pepsi", "Hamburguesa", "Papas Fritas", "Completo"][i]
     precio_menu = (i+1) * 1
@@ -291,11 +287,17 @@ for i, imagen in enumerate(imagenes):
         image=imagen, 
         compound="top", 
         font=("Arial", 14), 
-        fg_color="transparent", 
+        fg_color="green",  # Color de fondo inicial
         border_width=2,  # Ancho del borde
-        border_color="green",  # Color del borde # Cambia 'gray' por el color que prefieras
         command=lambda img=imagen, nom=nombre_menu, pre=precio_menu: agregar_menu_seleccionado(img, nom, pre))
+    
+    # Asignar las funciones de cambio de color con referencia al botón específico
+    boton_menu.bind("<ButtonPress-1>", cambiar_color_fondo)
+    boton_menu.bind("<ButtonRelease-1>", restaurar_color_fondo)
+    
     boton_menu.grid(row=i//2, column=i%2, padx=10, pady=10)
+
+
 
 
 treeview_precios = ttk.Treeview(frame_precios, columns=("menu", "cantidad", "precio"), show="headings", height=8)
