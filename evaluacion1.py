@@ -1,7 +1,4 @@
 # falta : arglar pdf ya que no c parecen al del video y el tema de los iconos ademas de lo del boton de generar menu
-
-
-
 import customtkinter as ctk
 import tkinter as tk
 from tkinter import ttk
@@ -10,6 +7,7 @@ from PIL import Image, ImageTk
 from fpdf import FPDF
 from customtkinter import CTkImage
 from PIL import Image
+from datetime import datetime
 
 class Ingrediente:
     def __init__(self, nombre, cantidad):
@@ -71,26 +69,63 @@ def generar_boleta():
     pdf.add_page()
     pdf.set_font("Arial", size=12)
 
-    # Título
-    pdf.cell(200, 10, txt="Boleta de Pedido", ln=True, align='C')
+     # Título
+    pdf.cell(0, 10, txt="Boleta de Pedido", ln=True, align='L')
     pdf.ln(10)
+
+    # Información del restaurante
+    pdf.set_font("Arial", size=10)
+    pdf.cell(0, 10, txt="Nombre del Restaurante: Mi Restaurante", ln=True)
+    pdf.cell(0, 10, txt="Razón Social: Restaurante S.A.", ln=True)
+    pdf.cell(0, 10, txt="RUT: 12345678-9", ln=True)
+    pdf.cell(0, 10, txt="Dirección: Calle Falsa 123", ln=True)
+    pdf.cell(0, 10, txt="Teléfono: +56 9 1234 5678", ln=True)
+    pdf.ln(10)  # Espacio entre la información del restaurante y el contenido de la boleta
+
+    # Fecha
+    pdf.set_font("Arial", size=10)
+    fecha_actual = datetime.now().strftime("%d/%m/%Y")
+    pdf.cell(0, 10, txt=f"Fecha: {fecha_actual}", ln=True, align='R')
+    pdf.ln(10)  # Espacio entre la fecha y la tabla de artículos
 
     # Agregar detalles del pedido
-    total = pedido.calcular_total()
+    total_sin_iva = 0
     pdf.cell(100, 10, txt="Nombre del Menú", border=1, align='C')
-    pdf.cell(50, 10, txt="Cantidad", border=1, align='C')
-    pdf.cell(50, 10, txt="Precio Unitario", border=1, ln=True, align='C')
+    pdf.cell(30, 10, txt="Cantidad", border=1, align='C')
+    pdf.cell(30, 10, txt="Precio Unitario", border=1, align='C')
+    pdf.cell(30, 10, txt="Total", border=1, ln=True, align='C')
 
     for menu in pedido.listar_menus():
-        pdf.cell(100, 10, txt=menu['nombre'], border=1)
-        pdf.cell(50, 10, txt=str(menu['cantidad']), border=1, align='C')
-        pdf.cell(50, 10, txt=f"${menu['precio']:.2f}", border=1, ln=True, align='C')
+        cantidad = menu['cantidad']
+        precio_unitario = menu['precio']
+        total_item = cantidad * precio_unitario
+        total_sin_iva += total_item
 
-    # Total
+        pdf.cell(100, 10, txt=menu['nombre'], border=1)
+        pdf.cell(30, 10, txt=str(cantidad), border=1, align='C')
+        pdf.cell(30, 10, txt=f"${precio_unitario:.2f}", border=1, align='C')
+        pdf.cell(30, 10, txt=f"${total_item:.2f}", border=1, ln=True, align='C')
+
+    # Calcular IVA (19%)
+    iva = total_sin_iva * 0.19
+    total_con_iva = total_sin_iva + iva
+
+    # Total sin IVA
     pdf.ln(10)
-    pdf.cell(100, 10, txt="Total:", border=1)
-    pdf.cell(50, 10, txt="", border=1)
-    pdf.cell(50, 10, txt=f"${total:.2f}", border=1, ln=True, align='C')
+    pdf.cell(160, 10, txt="Subtotal:", border=1)
+    pdf.cell(30, 10, txt=f"${total_sin_iva:.2f}", border=1, ln=True, align='C')
+
+    # IVA
+    pdf.cell(160, 10, txt="IVA (19%):", border=1)
+    pdf.cell(30, 10, txt=f"${iva:.2f}", border=1, ln=True, align='C')
+
+    # Total con IVA
+    pdf.cell(160, 10, txt="Total:", border=1)
+    pdf.cell(30, 10, txt=f"${total_con_iva:.2f}", border=1, ln=True, align='C')
+    
+    # mensaje de agradecimiento
+    
+    pdf.cell(0, 10, txt="Gracias por su compra los productos adquiridos no son reembolsables para mas consultas llamar al numero: +56 9 1234 5678", ln=True)
 
     # Guardar PDF
     pdf_output = "boleta_pedido.pdf"
@@ -102,7 +137,7 @@ ctk.set_default_color_theme("blue")
 
 ventana = ctk.CTk()
 ventana.title("Gestión de Ingredientes y Pedidos")
-ventana.geometry("1200x800")
+ventana.geometry("900x700")
 
 tabview = ctk.CTkTabview(ventana)
 tabview.pack(fill="both", expand=True)
@@ -211,17 +246,13 @@ imagenes = [
 ]
 
 
-
-
-
 # Ingredientes necesarios para cada menú
 ingredientes_necesarios = {
-    "Hamburguesa": {"churrasco de carne": 1, "pan de hamburguesa": 1, "lamina de queso": 1},
-    "Papas Fritas": {"papa": 5},
-    "Completo": {"tomate": 1, "palta": 1, "pan de completo": 1, "Vienesa": 1,},
-    "Pepsi": {"bebida": 1} #Agregue los menu y cambie todo a minuscula como estaba en el word
+    "Hamburguesa": {"pan": 1, "queso": 1, "churrasco": 1},
+    "Papas Fritas": {"papas": 5},
+    "Completo": {"pan": 1, "vienesa": 1, "tomate": 1, "palta": 1},
+    "Pepsi": {"bebida": 1}
 }
-
 
 def agregar_menu_seleccionado(imagen, nombre, precio):
     if not stock.hay_ingredientes():
@@ -285,23 +316,32 @@ def restaurar_color_fondo(event):
 # Los botones y las imágenes de los menús ya están definidos
 for i, imagen in enumerate(imagenes):
     nombre_menu = ["Pepsi", "Hamburguesa", "Papas Fritas", "Completo"][i]
-    precio_menu = (i+1) * 1
+    
+    # Asignar los precios correctos
+    if nombre_menu == "Pepsi":
+        pre_menu = 1100.00
+    elif nombre_menu == "Hamburguesa":
+        pre_menu = 3500.00
+    elif nombre_menu == "Papas Fritas":
+        pre_menu = 500.00
+    elif nombre_menu == "Completo":
+        pre_menu = 1800.00
+
     boton_menu = ctk.CTkButton(
         frame_opciones, 
         text=nombre_menu, 
         image=imagen, 
         compound="top", 
-        font=("Arial", 14), 
-        fg_color="blue",  # Color de fondo inicial
+        font=("Arial", 12), 
+        fg_color="green",  # Color de fondo inicial
         border_width=2,  # Ancho del borde
-        command=lambda img=imagen, nom=nombre_menu, pre=precio_menu: agregar_menu_seleccionado(img, nom, pre))
+        command=lambda img=imagen, nom=nombre_menu, pre=pre_menu: agregar_menu_seleccionado(img, nom, pre)
+    )
     
-    # Asignar las funciones de cambio de color con referencia al botón específico
     boton_menu.bind("<ButtonPress-1>", cambiar_color_fondo)
     boton_menu.bind("<ButtonRelease-1>", restaurar_color_fondo)
     
     boton_menu.grid(row=i//2, column=i%2, padx=10, pady=10)
-
 
 
 
@@ -322,7 +362,7 @@ def actualizar_precios():
     
     # Insertar los menús con su nombre, cantidad y precio
     for menu in pedido.listar_menus():
-        treeview_precios.insert("", "end", values=(menu['nombre'], menu['cantidad'], f"${menu['precio']:.2f}"))
+        treeview_precios.insert("", "end", values=(menu['nombre'], menu['cantidad'], f"${menu['precio']:.0f}"))
     
     # Actualizar el total
     actualizar_total()
@@ -333,7 +373,7 @@ def actualizar_precios():
 # Calcular el total multiplicando el precio por la cantidad
 def actualizar_total():
     total = pedido.calcular_total()
-    label_total.configure(text=f"Total: ${total:.2f}")
+    label_total.configure(text=f"Total: ${total:.0f}")
 
 # Funcion para eliminar todos los menús y reiniciar la interfaz
 def eliminar_todos_los_menus_y_reiniciar():
@@ -347,14 +387,16 @@ frame_total = ctk.CTkFrame(tab_pedido)
 frame_total.place(relx=0.55, rely=0.35, relwidth=0.4, relheight=0.1)
 
 label_total = ctk.CTkLabel(frame_total, text="Total: $0", font=("Arial", 16))
-label_total.pack(side="left", padx=20)
+label_total.pack(side="right", padx=0, pady=10)
 
 boton_eliminar = ctk.CTkButton(frame_total, text="Eliminar Menú", fg_color="black", text_color="white", command=eliminar_todos_los_menus_y_reiniciar)
 boton_eliminar.pack(side="right", padx=20, pady=10)
 
 # Agregar botón para generar boleta
 boton_generar_boleta = ctk.CTkButton(frame_total, text="Generar Boleta", fg_color="black", text_color="white", command=generar_boleta)
-boton_generar_boleta.pack(side="right", padx=20, pady=10)
+boton_generar_boleta.pack(side="right", padx=0, pady=10)
 
+
+ventana.mainloop()
 
 ventana.mainloop()
