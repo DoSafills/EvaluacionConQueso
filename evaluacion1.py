@@ -88,10 +88,10 @@ def generar_boleta():
 
     # Agregar detalles del pedido
     total_sin_iva = 0
-    pdf.cell(100, 10, txt="Nombre del Men", border=1, align='C')
+    pdf.cell(100, 10, txt="Nombre", border=1, align='C')
     pdf.cell(30, 10, txt="Cantidad", border=1, align='C')
     pdf.cell(30, 10, txt="Precio Unitario", border=1, align='C')
-    pdf.cell(30, 10, txt="Total", border=1, ln=True, align='C')
+    pdf.cell(30, 10, txt="SubTotal", border=1, ln=True, align='C')
 
     for menu in pedido.listar_menus():
         cantidad = menu['cantidad']
@@ -120,11 +120,11 @@ def generar_boleta():
     # Total con IVA
     pdf.cell(160, 10, txt="Total:",)
     pdf.cell(30, 10, txt=f"${total_con_iva:.2f}", ln=True, align='C')
-    
+    pdf.ln(10)  # Espacio
     # mensaje de agradecimiento
     
     pdf.cell(0, 10, txt="Gracias por su compra los productos adquiridos no son reembolsables para mas consultas llamar al numero: +56 9 1234 5678", ln=True)
-
+    pdf.cell(0, 10, txt="los productos adquiridos no tienen garantia", ln=True)
     # Guardar PDF
     pdf_output = "boleta_pedido.pdf"
     pdf.output(pdf_output)
