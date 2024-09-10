@@ -1,12 +1,9 @@
-# falta : arglar pdf ya que no c parecen al del video y el tema de los iconos ademas de lo del boton de generar menu
 import customtkinter as ctk
 import tkinter as tk
 from tkinter import ttk
 from CTkMessagebox import CTkMessagebox
 from PIL import Image, ImageTk
 from fpdf import FPDF
-from customtkinter import CTkImage
-from PIL import Image
 from datetime import datetime
 
 class Ingrediente:
@@ -60,37 +57,38 @@ def seleccionar_imagen(ruta):
     imagen = imagen.resize((100, 100), Image.Resampling.LANCZOS)
     return ImageTk.PhotoImage(imagen)
 
+#PDF 
+
 def generar_boleta():
     if not pedido.listar_menus():
-        CTkMessagebox(title="Error", message="No hay menús en el pedido para generar una boleta.", icon="warning")
+        CTkMessagebox(title="Error", message="No hay menus en el pedido para generar una boleta.", icon="warning")
         return
 
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Arial", size=12)
 
-     # Título
+ # Titulo
     pdf.cell(0, 10, txt="Boleta de Pedido", ln=True, align='L')
     pdf.ln(10)
 
-    # Información del restaurante
+# Informacion del restaurante
     pdf.set_font("Arial", size=10)
-    pdf.cell(0, 10, txt="Nombre del Restaurante: Mi Restaurante", ln=True)
-    pdf.cell(0, 10, txt="Razón Social: Restaurante S.A.", ln=True)
+    pdf.cell(0, 10, txt="Razón Social del Negoxio", ln=True)
     pdf.cell(0, 10, txt="RUT: 12345678-9", ln=True)
     pdf.cell(0, 10, txt="Dirección: Calle Falsa 123", ln=True)
     pdf.cell(0, 10, txt="Teléfono: +56 9 1234 5678", ln=True)
-    pdf.ln(10)  # Espacio entre la información del restaurante y el contenido de la boleta
+    pdf.ln(10)  # Espacio
 
     # Fecha
     pdf.set_font("Arial", size=10)
     fecha_actual = datetime.now().strftime("%d/%m/%Y")
     pdf.cell(0, 10, txt=f"Fecha: {fecha_actual}", ln=True, align='R')
-    pdf.ln(10)  # Espacio entre la fecha y la tabla de artículos
+    pdf.ln(10)  # Espacio
 
     # Agregar detalles del pedido
     total_sin_iva = 0
-    pdf.cell(100, 10, txt="Nombre del Menú", border=1, align='C')
+    pdf.cell(100, 10, txt="Nombre del Men", border=1, align='C')
     pdf.cell(30, 10, txt="Cantidad", border=1, align='C')
     pdf.cell(30, 10, txt="Precio Unitario", border=1, align='C')
     pdf.cell(30, 10, txt="Total", border=1, ln=True, align='C')
@@ -112,16 +110,16 @@ def generar_boleta():
 
     # Total sin IVA
     pdf.ln(10)
-    pdf.cell(160, 10, txt="Subtotal:", border=1)
-    pdf.cell(30, 10, txt=f"${total_sin_iva:.2f}", border=1, ln=True, align='C')
+    pdf.cell(160, 10, txt="Subtotal:",)
+    pdf.cell(30, 10, txt=f"${total_sin_iva:.2f}", ln=True, align='C')
 
     # IVA
-    pdf.cell(160, 10, txt="IVA (19%):", border=1)
-    pdf.cell(30, 10, txt=f"${iva:.2f}", border=1, ln=True, align='C')
+    pdf.cell(160, 10, txt="IVA (19%):", )
+    pdf.cell(30, 10, txt=f"${iva:.2f}", ln=True, align='C')
 
     # Total con IVA
-    pdf.cell(160, 10, txt="Total:", border=1)
-    pdf.cell(30, 10, txt=f"${total_con_iva:.2f}", border=1, ln=True, align='C')
+    pdf.cell(160, 10, txt="Total:",)
+    pdf.cell(30, 10, txt=f"${total_con_iva:.2f}", ln=True, align='C')
     
     # mensaje de agradecimiento
     
@@ -131,18 +129,19 @@ def generar_boleta():
     pdf_output = "boleta_pedido.pdf"
     pdf.output(pdf_output)
 
-    CTkMessagebox(title="Éxito", message=f"Boleta generada exitosamente y guardada como {pdf_output}.", icon="check")
+    CTkMessagebox(title="Exito", message=f"Boleta generada exitosamente y guardada como {pdf_output}.", icon="check")
+    
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
 ventana = ctk.CTk()
-ventana.title("Gestión de Ingredientes y Pedidos")
+ventana.title("Gestion de Ingredientes y Pedidos")
 ventana.geometry("900x700")
 
 tabview = ctk.CTkTabview(ventana)
 tabview.pack(fill="both", expand=True)
 
-# Pestaña de Ingredientes
+# Pestana de Ingredientes
 tab_ingredientes = tabview.add("Ingreso de Ingredientes")
 tab_pedido = tabview.add("Pedido")
 
@@ -164,6 +163,8 @@ label_cantidad.pack(pady=5)
 entrada_cantidad = ctk.CTkEntry(frame_formulario)
 entrada_cantidad.pack(pady=5)
 
+
+
 stock = Stock()
 
 def agregar_ingrediente():
@@ -176,7 +177,7 @@ def agregar_ingrediente():
         CTkMessagebox(title="Error", message="El nombre del ingrediente debe contener solo letras y espacios.", icon="warning")
         return
     if not validar_cantidad(cantidad):
-        CTkMessagebox(title="Error", message="La cantidad debe ser un número entero positivo.", icon="warning")
+        CTkMessagebox(title="Error", message="La cantidad debe ser un numero entero positivo.", icon="warning")
         return
     nuevo_ingrediente = Ingrediente(nombre, int(cantidad))
     stock.agregar_ingrediente(nuevo_ingrediente)
@@ -193,7 +194,7 @@ def eliminar_ingrediente():
     if stock.eliminar_ingrediente(nombre):
         actualizar_treeview()
     else:
-        CTkMessagebox(title="Error", message="El ingrediente no se encontró en el stock.", icon="warning")
+        CTkMessagebox(title="Error", message="El ingrediente no se encontro en el stock.", icon="warning")
     limpiar_entradas()
 
 def actualizar_treeview():
@@ -212,8 +213,21 @@ def validar_nombre(nombre):
 def validar_cantidad(cantidad):
     return cantidad.isdigit() and int(cantidad) > 0
 
-boton_eliminar = ctk.CTkButton(frame_treeview, text="Eliminar Ingrediente", fg_color="black", text_color="white", command=eliminar_ingrediente)
-boton_eliminar.pack(pady=10)
+def generar_menu():
+    tabview.set("Pedido")  # Cambia a la pestaña de Pedido
+    actualizar_precios()  # Actualiza la tabla de precios cuando se cambie de pestaña
+    actualizar_total()  # Asegurate de que el total también se actualice
+
+
+
+# Frame para los botones en la parte inferior
+frame_botones = ctk.CTkFrame(tab_pedido)
+frame_botones.pack(side="bottom", pady=20)  # Colocado abajo con un espacio vertical (pady)
+
+# Botón para generar boleta
+boton_generar_boleta = ctk.CTkButton(frame_botones, text="Generar Boleta", fg_color="black", text_color="white", command=generar_boleta)
+boton_generar_boleta.pack(side="left", padx=10, pady=10)
+
 
 treeview = ttk.Treeview(frame_treeview, columns=("nombre", "cantidad"), show="headings", height=20)
 treeview.column("nombre", anchor=tk.W, width=250)
@@ -225,7 +239,7 @@ treeview.pack(expand=True, fill="both", padx=10, pady=10)
 boton_agregar = ctk.CTkButton(frame_formulario, text="Ingresar Ingrediente", command=agregar_ingrediente)
 boton_agregar.pack(pady=10)
 
-boton_generar_menu = ctk.CTkButton(frame_treeview, text="Generar Menú")
+boton_generar_menu = ctk.CTkButton(frame_treeview, text="Generar Menu", command=generar_menu)
 boton_generar_menu.pack(side="bottom", pady=20)
 
 # Pestaña de Pedido
@@ -274,7 +288,7 @@ def agregar_menu_seleccionado(imagen, nombre, precio):
     pedido.agregar_menu(nuevo_menu)
     actualizar_precios()
 
-# Función para verificar si hay suficientes ingredientes
+# Funcion para verificar si hay suficientes ingredientes
 # Modificar la función para verificar y descontar ingredientes
 def verificar_y_descontar_ingredientes(menu):
     if menu not in ingredientes_necesarios:
@@ -313,7 +327,7 @@ def restaurar_color_fondo(event):
     boton = event.widget
     boton.configure(fg_color="green")
 
-# Los botones y las imágenes de los menús ya están definidos
+# Los botones y las imágenes de los menus ya estan definidos
 for i, imagen in enumerate(imagenes):
     nombre_menu = ["Pepsi", "Hamburguesa", "Papas Fritas", "Completo"][i]
     
@@ -333,8 +347,9 @@ for i, imagen in enumerate(imagenes):
         image=imagen, 
         compound="top", 
         font=("Arial", 12), 
-        fg_color="green",  # Color de fondo inicial
+        fg_color="#2B2B2B",  # Color de fondo inicial
         border_width=2,  # Ancho del borde
+        border_color="green", 
         command=lambda img=imagen, nom=nombre_menu, pre=pre_menu: agregar_menu_seleccionado(img, nom, pre)
     )
     
@@ -349,7 +364,7 @@ treeview_precios = ttk.Treeview(frame_precios, columns=("menu", "cantidad", "pre
 treeview_precios.column("menu", anchor=tk.W, width=200)
 treeview_precios.column("cantidad", anchor=tk.W, width=100)
 treeview_precios.column("precio", anchor=tk.W, width=100)
-treeview_precios.heading("menu", text="Nombre del Menú")
+treeview_precios.heading("menu", text="Nombre del Menu")
 treeview_precios.heading("cantidad", text="Cantidad")
 treeview_precios.heading("precio", text="Precio Unitario")
 treeview_precios.pack(expand=True, fill="both", padx=10, pady=10)
@@ -360,9 +375,9 @@ def actualizar_precios():
     for item in treeview_precios.get_children():
         treeview_precios.delete(item)
     
-    # Insertar los menús con su nombre, cantidad y precio
+    # Insertar los menus con su nombre cantidad precio
     for menu in pedido.listar_menus():
-        treeview_precios.insert("", "end", values=(menu['nombre'], menu['cantidad'], f"${menu['precio']:.0f}"))
+        treeview_precios.insert("", "end", values=(menu['nombre'], menu['cantidad'], f"${menu['precio']:.2f}"))
     
     # Actualizar el total
     actualizar_total()
@@ -373,30 +388,26 @@ def actualizar_precios():
 # Calcular el total multiplicando el precio por la cantidad
 def actualizar_total():
     total = pedido.calcular_total()
-    label_total.configure(text=f"Total: ${total:.0f}")
+    label_total.configure(text=f"Total: ${total:.2f}")
 
-# Funcion para eliminar todos los menús y reiniciar la interfaz
+# Funcion para eliminar todos los menus y reiniciar la interfaz
 def eliminar_todos_los_menus_y_reiniciar():
     pedido.eliminar_todos_los_menus()
-      # Eliminar todos los menús
+      # Eliminar los menus
     actualizar_precios()  # Actualizar la tabla de precios
     actualizar_total()  # Reiniciar el total a $0
 
-# Boton para eliminar todos los menús
+# Boton para eliminar los menús
 frame_total = ctk.CTkFrame(tab_pedido)
 frame_total.place(relx=0.55, rely=0.35, relwidth=0.4, relheight=0.1)
 
 label_total = ctk.CTkLabel(frame_total, text="Total: $0", font=("Arial", 16))
-label_total.pack(side="right", padx=0, pady=10)
+label_total.pack(side="left", padx=0, pady=10)
 
 boton_eliminar = ctk.CTkButton(frame_total, text="Eliminar Menú", fg_color="black", text_color="white", command=eliminar_todos_los_menus_y_reiniciar)
 boton_eliminar.pack(side="right", padx=20, pady=10)
 
-# Agregar botón para generar boleta
-boton_generar_boleta = ctk.CTkButton(frame_total, text="Generar Boleta", fg_color="black", text_color="white", command=generar_boleta)
-boton_generar_boleta.pack(side="right", padx=0, pady=10)
 
 
-ventana.mainloop()
 
 ventana.mainloop()
