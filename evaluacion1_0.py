@@ -166,6 +166,8 @@ label_cantidad.pack(pady=5)
 entrada_cantidad = ctk.CTkEntry(frame_formulario)
 entrada_cantidad.pack(pady=5)
 
+
+
 stock = Stock()
 
 def agregar_ingrediente():
@@ -214,6 +216,11 @@ def validar_nombre(nombre):
 def validar_cantidad(cantidad):
     return cantidad.isdigit() and int(cantidad) > 0
 
+def generar_menu():
+    tabview.set("Pedido")  # Cambia a la pestaña de Pedido
+    actualizar_precios()  # Actualiza la tabla de precios cuando se cambie de pestaña
+    actualizar_total()  # Asegúrate de que el total también se actualice
+
 boton_eliminar = ctk.CTkButton(frame_treeview, text="Eliminar Ingrediente", fg_color="black", text_color="white", command=eliminar_ingrediente)
 boton_eliminar.pack(pady=10)
 
@@ -227,7 +234,7 @@ treeview.pack(expand=True, fill="both", padx=10, pady=10)
 boton_agregar = ctk.CTkButton(frame_formulario, text="Ingresar Ingrediente", command=agregar_ingrediente)
 boton_agregar.pack(pady=10)
 
-boton_generar_menu = ctk.CTkButton(frame_treeview, text="Generar Menú")
+boton_generar_menu = ctk.CTkButton(frame_treeview, text="Generar Menú", command=generar_menu)
 boton_generar_menu.pack(side="bottom", pady=20)
 
 # Pestaña de Pedido
@@ -335,8 +342,9 @@ for i, imagen in enumerate(imagenes):
         image=imagen, 
         compound="top", 
         font=("Arial", 12), 
-        fg_color="green",  # Color de fondo inicial
+        fg_color="#2B2B2B",  # Color de fondo inicial
         border_width=2,  # Ancho del borde
+        border_color="green", 
         command=lambda img=imagen, nom=nombre_menu, pre=pre_menu: agregar_menu_seleccionado(img, nom, pre)
     )
     
