@@ -389,14 +389,15 @@ frame_total = ctk.CTkFrame(tab_pedido)
 frame_total.place(relx=0.55, rely=0.35, relwidth=0.4, relheight=0.1)
 
 label_total = ctk.CTkLabel(frame_total, text="Total: $0", font=("Arial", 16))
-label_total.pack(side="left", padx=20)
+label_total.pack(side="right", padx=0, pady=10)
 
 boton_eliminar = ctk.CTkButton(frame_total, text="Eliminar Menú", fg_color="black", text_color="white", command=eliminar_todos_los_menus_y_reiniciar)
 boton_eliminar.pack(side="right", padx=20, pady=10)
 
 # Agregar botón para generar boleta
 boton_generar_boleta = ctk.CTkButton(frame_total, text="Generar Boleta", fg_color="black", text_color="white", command=generar_boleta)
-boton_generar_boleta.pack(side="right", padx=20, pady=10)
+boton_generar_boleta.pack(side="right", padx=0, pady=10)
+
 
 
 ventana.mainloop()
