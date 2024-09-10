@@ -7,6 +7,7 @@ from PIL import Image, ImageTk
 from fpdf import FPDF
 from customtkinter import CTkImage
 from PIL import Image
+from datetime import datetime
 
 class Ingrediente:
     def __init__(self, nombre, cantidad):
@@ -68,26 +69,65 @@ def generar_boleta():
     pdf.add_page()
     pdf.set_font("Arial", size=12)
 
+    
+
+    # Información del restaurante
+    pdf.set_font("Arial", size=10)
+    pdf.cell(0, 10, txt="Nombre del Restaurante: Mi Restaurante", ln=True)
+    pdf.cell(0, 10, txt="Razón Social: Restaurante S.A.", ln=True)
+    pdf.cell(0, 10, txt="RUT: 12345678-9", ln=True)
+    pdf.cell(0, 10, txt="Dirección: Calle Falsa 123", ln=True)
+    pdf.cell(0, 10, txt="Teléfono: +56 9 1234 5678", ln=True)
+    pdf.ln(10)  # Espacio entre la información del restaurante y el contenido de la boleta
+
+    # Fecha
+    pdf.set_font("Arial", size=10)
+    fecha_actual = datetime.now().strftime("%d/%m/%Y")
+    pdf.cell(0, 10, txt=f"Fecha: {fecha_actual}", ln=True, align='R')
+    pdf.ln(10)  # Espacio entre la fecha y la tabla de artículos
+
+
+
     # Título
     pdf.cell(200, 10, txt="Boleta de Pedido", ln=True, align='C')
     pdf.ln(10)
 
+
+
     # Agregar detalles del pedido
-    total = pedido.calcular_total()
+    total_sin_iva = 0
     pdf.cell(100, 10, txt="Nombre del Menú", border=1, align='C')
-    pdf.cell(50, 10, txt="Cantidad", border=1, align='C')
-    pdf.cell(50, 10, txt="Precio Unitario", border=1, ln=True, align='C')
+    pdf.cell(30, 10, txt="Cantidad", border=1, align='C')
+    pdf.cell(30, 10, txt="Precio Unitario", border=1, align='C')
+    pdf.cell(30, 10, txt="Total", border=1, ln=True, align='C')
 
     for menu in pedido.listar_menus():
-        pdf.cell(100, 10, txt=menu['nombre'], border=1)
-        pdf.cell(50, 10, txt=str(menu['cantidad']), border=1, align='C')
-        pdf.cell(50, 10, txt=f"${menu['precio']:.0f}", border=1, ln=True, align='C')
+        cantidad = menu['cantidad']
+        precio_unitario = menu['precio']
+        total_item = cantidad * precio_unitario
+        total_sin_iva += total_item
 
-    # Total
+        pdf.cell(100, 10, txt=menu['nombre'], border=1)
+        pdf.cell(30, 10, txt=str(cantidad), border=1, align='C')
+        pdf.cell(30, 10, txt=f"${precio_unitario:.0f}", border=1, align='C')
+        pdf.cell(30, 10, txt=f"${total_item:.0f}", border=1, ln=True, align='C')
+
+    # Calcular IVA (19%)
+    iva = total_sin_iva * 0.19
+    total_con_iva = total_sin_iva + iva
+
+    # Total sin IVA
     pdf.ln(10)
-    pdf.cell(100, 10, txt="Total:", border=1)
-    pdf.cell(50, 10, txt="", border=1)
-    pdf.cell(50, 10, txt=f"${total:.0f}", border=1, ln=True, align='C')
+    pdf.cell(160, 10, txt="Subtotal:", border=1)
+    pdf.cell(30, 10, txt=f"${total_sin_iva:.0f}", border=1, ln=True, align='C')
+
+    # IVA
+    pdf.cell(160, 10, txt="IVA (19%):", border=1)
+    pdf.cell(30, 10, txt=f"${iva:.0f}", border=1, ln=True, align='C')
+
+    # Total con IVA
+    pdf.cell(160, 10, txt="Total:", border=1)
+    pdf.cell(30, 10, txt=f"${total_con_iva:.0f}", border=1, ln=True, align='C')
 
     # Guardar PDF
     pdf_output = "boleta_pedido.pdf"
